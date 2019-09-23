@@ -7,7 +7,7 @@ from unittest import TestCase
 class TestLaravelGotoTestCommand(TestCase):
     def setUp(self):
         self.window = sublime.active_window()
-        sample = os.path.dirname(__file__) + '/HelloController.php'
+        sample = os.path.dirname(__file__) + '/Controllers/HelloController.php'
         self.view = self.window.open_file(sample)
         while self.view.is_loading():
             pass
