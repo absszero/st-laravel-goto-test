@@ -4,18 +4,46 @@ import re
 import os
 
 
+class Meta:
+    def __init__(self, basename, namespace):
+        super().__init__()
+        splited = basename.split('.')
+        # get original class file
+        if ('Test.' in basename):
+            splited[0] = splited[0][:-4]
+            self.classname = splited[0]
+            self.target = '.'.join(splited)
+            self.toTest = False
+        # get test file
+        else:
+            splited[0] += 'Test'
+            self.test_file = '.'.join(splited)
+            self.classname = splited[0]
+            self.target = '.'.join(splited)
+            self.toTest = True
+
+        self.namespace = namespace
+
+        if (self.namespace):
+            self.target = self.namespace + '/' + self.target
+
+
 class LaravelGotoTestCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
 
     def run(self, edit):
         self.window = sublime.active_window()
-        filename = self.get_filename()
-        namespace = self.get_last_namespace()
-        if (namespace):
-            filename = namespace + '/' + filename
-        self.search(filename)
+        meta = Meta(self.get_basename(), self.get_last_namespace())
+        self.search(meta.target)
         return
+
+    def is_visible(self):
+        # find <?php
+        regions = self.view.find_by_selector(
+            'punctuation.section.embedded.begin.php'
+        )
+        return 0 != len(regions)
 
     def get_last_namespace(self):
         region = self.view.find_by_selector('entity.name.namespace')
@@ -27,17 +55,9 @@ class LaravelGotoTestCommand(sublime_plugin.TextCommand):
         if (1 < len(splited)):
             return splited[-1]
 
-    def get_filename(self):
+    def get_basename(self):
         filename = self.window.active_view().file_name()
-        basename = os.path.basename(filename)
-        splited = basename.split('.')
-        # get original class file
-        if ('Test.' in basename):
-            splited[0] = splited[0][:-4]
-        # get test file
-        else:
-            splited[0] += 'Test'
-        return '.'.join(splited)
+        return os.path.basename(filename)
 
     def search(self, filename):
         args = {
