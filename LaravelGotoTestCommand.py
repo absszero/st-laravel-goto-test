@@ -39,11 +39,8 @@ class LaravelGotoTestCommand(sublime_plugin.TextCommand):
         return
 
     def is_visible(self):
-        # find <?php
-        regions = self.view.find_by_selector(
-            'punctuation.section.embedded.begin.php'
-        )
-        return 0 != len(regions)
+        filename = self.view.file_name()
+        return bool(filename and filename.endswith('.php'))
 
     def get_last_namespace(self):
         region = self.view.find_by_selector('entity.name.namespace')
